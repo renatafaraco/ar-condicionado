@@ -1,0 +1,54 @@
+{
+    "name": "MideaIRWrapper", 
+    "repository": {
+        "url": "https://github.com/WiserUFBA/ArduMideaWrapper.git", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelavr"
+    ], 
+    "frameworks": [
+        "arduino"
+    ], 
+    "dependencies": {
+        "frameworks": "arduino", 
+        "authors": [
+            {
+                "name": "Rafi Khan", 
+                "email": "zetoslab@gmail.com"
+            }, 
+            {
+                "name": "Ken Shirriff", 
+                "email": "ken.shirriff@gmail.com"
+            }
+        ], 
+        "name": "IRremote", 
+        "platforms": "atmelavr"
+    }, 
+    "version": "009885bb8e", 
+    "authors": [
+        {
+            "maintainer": true, 
+            "name": "Jeferson Lima", 
+            "url": "http://jefersonla.github.io", 
+            "email": "jefersonlimaa@dcc.ufba.br"
+        }, 
+        {
+            "url": null, 
+            "maintainer": false, 
+            "email": "dsaandrade@dcc.ufba.br", 
+            "name": "Andressa Andrade"
+        }
+    ], 
+    "keywords": [
+        "airconditioner", 
+        "ac", 
+        "remote", 
+        "midea", 
+        "ir", 
+        "infrared", 
+        "arduino-ac"
+    ], 
+    "id": 224, 
+    "description": "Wrapper for Midea AC, designed to be used with Arduino platform and IRRemote Library"
+}
