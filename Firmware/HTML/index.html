@@ -94,20 +94,20 @@
 		}
 
 		var buttonLigar = document.getElementById("botaoLigar");
-		button.addEventListener("click", function(event) {
+		buttonLigar.addEventListener("click", function(event) {
 			connection.send('#Ligar');
 			console.log("Enviou ligar");
 		});
 
 		var buttonDesligar = document.getElementById("botaoDesligar");
-		button.addEventListener("click", function(event) {
+		buttonDesligar.addEventListener("click", function(event) {
 			connection.send('#Desligar');
 			console.log("Enviou desligar")
 		});
 
 
-		var buttonDesligar = document.getElementById("botaoEnviarTemp");
-		button.addEventListener("click", function(event) {
+		var buttonEnviarTemp = document.getElementById("botaoEnviarTemp");
+		buttonEnviarTemp.addEventListener("click", function(event) {
 			connection.send('#Setar#' + document.getElementById("inputTemp").value);
 			console.log("Enviou temperatura " + document.getElementById("inputTemp").value)
 		});
