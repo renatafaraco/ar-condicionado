@@ -13,14 +13,14 @@
   	<h1><i class="fa fa-thermometer-full" aria-hidden="true"></i> Controle de Refrigeração</h1>
   		<hr class="my-4">
 </div>
-<div clas="container alerta">
+<div clas="container alerta" id="div-alerta">
 	<div class="row justify-content-center">
-  		<span id="alerta"> Comando enviado com sucesso!</span>
+  		<span id="alerta"> </span>
   	</div>
 </div>
 <div clas="container" style="margin-top: 30px">
 	<div class="row justify-content-center">
-  		Temperatura atual: <span id="temperatura">0</span> °C
+  		Temperatura atual: <span id="temperatura">--</span> °C
   	</div>
 </div>
 <div clas="container" style="margin-top: 30px">
@@ -37,7 +37,7 @@
 	</div>
   	<div class="row justify-content-center" style="margin-top: 10px">
 	    <div class="col-sm-2">
-	      <input type="text" class="form-control" placeholder="°C" id="inputTemp">
+	      <input type="number" class="form-control" placeholder="°C" id="inputTemp" value="22">
 	    </div>
 	    <div class="col-sm-2">
 			<button type="button" class="btn btn-primary btn-sm btn-block" id="botaoEnviarTemp">Enviar temperatura</button>
@@ -48,12 +48,17 @@
 	<div class="row justify-content-center">
   		<h3>Agendar funcionamento:</h3>
   	</div>
+  	<div class="row justify-content-center">
+  		<div class="col-sm-4">
+			<input type="checkbox" name="agendaAtiva" value="agendaAtiva" id="agendaAtiva"> Ativo
+  		</div>
+  	</div>
    	<div class="row justify-content-center">
 		<div class="col-sm-2">
 	      <p>Ligar às:</p>
 	    </div>
 	    <div class="col-sm-2">
-	      <input type="text" class="form-control" placeholder="00:00">
+	      <input type="time" class="form-control" placeholder="00:00" id="inputHoraInicio" value="21:00">
 	    </div>
 	</div>
   	<div class="row justify-content-center">
@@ -61,12 +66,12 @@
 	      <p>Desligar às:</p>
 	    </div>
 	    <div class="col-sm-2">
-			<input type="text" class="form-control" placeholder="00:00">
+			<input type="time" class="form-control" placeholder="00:00" id="inputHoraFim" value="06:00">
 	    </div>
 	</div>
 	<div class="row justify-content-center">
 		<div class="col-sm-4">
-			<button type="button" class="btn btn-primary btn-sm btn-block">Enviar configurações</button>
+			<button type="button" class="btn btn-primary btn-sm btn-block" id="buttonAgenda">Enviar configurações</button>
 		<div>
 	</div>
 </div>
@@ -81,36 +86,95 @@
 <script type="text/javascript">
 	document.addEventListener("DOMContentLoaded", function(event) {
 		console.log("Carregamento total da DOM");
+		var limparAlerta = function() {
+			document.getElementById("div-alerta").className =
+  				document.getElementById("div-alerta").className
+    			.replace(new RegExp('(?:^|\\s)'+ 'alert-success' + '(?:\\s|$)'), ' ');
+    		document.getElementById("div-alerta").className =
+  				document.getElementById("div-alerta").className
+    			.replace(new RegExp('(?:^|\\s)'+ 'alert-danger' + '(?:\\s|$)'), ' ');
+    		document.getElementById('alerta').innerHTML = '';
+		}
+
+		var comandoSucesso = function() {
+			document.getElementById('alerta').innerHTML = 'Comando enviado com sucesso!';
+			document.getElementById('div-alerta').className += 'alert-success';
+			setTimeout(limparAlerta,5000);
+		}
+		var comandoFalha = function() {
+			document.getElementById('alerta').innerHTML = 'Falha ao enviar comando!';
+			document.getElementById('div-alerta').className += 'alert-danger';
+			setTimeout(limparAlerta,5000);
+		}
+
+		var comandoError = function() {
+			document.getElementById('alerta').innerHTML = 'Conexão perdida!';
+			document.getElementById('div-alerta').className += 'alert-danger';
+			setTimeout(limparAlerta,5000);
+		}
+
 		var connection = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
 		connection.onopen = function() {
-			connection.send('#oi arduino!');
-			console.log('mandou: #oi arduino!');
+			connection.send('#0');
+			console.log('mandou: #oi!');
 		}
 		connection.onerror = function(error) {
 			console.log('Websocket error', error);
+			comandoError();
 		}
 		connection.onmessage = function(evt) {
 			console.log('mensagem recebida: ', evt.data)
+			if (evt.data == '#ok') {
+				console.log('Comando sucesso!!');
+				comandoSucesso();
+			}
+			else if (evt.data == '#nok') {
+				console.log('Comando fracasso!!');
+				comandoFalha();
+			}
+			else if (evt.data.startsWith('#Temp')) {
+				var res = evt.data.split('$');
+				var temp = res[1];
+				console.log('Temperatura = ' + res[1]);
+				document.getElementById('temperatura').innerHTML = res[1];
+			}
+
 		}
 
 		var buttonLigar = document.getElementById("botaoLigar");
 		buttonLigar.addEventListener("click", function(event) {
-			connection.send('#Ligar');
+			connection.send('#1');
 			console.log("Enviou ligar");
 		});
 
 		var buttonDesligar = document.getElementById("botaoDesligar");
 		buttonDesligar.addEventListener("click", function(event) {
-			connection.send('#Desligar');
+			connection.send('#2');
 			console.log("Enviou desligar")
 		});
 
 
 		var buttonEnviarTemp = document.getElementById("botaoEnviarTemp");
 		buttonEnviarTemp.addEventListener("click", function(event) {
-			connection.send('#Setar#' + document.getElementById("inputTemp").value);
+			connection.send('#3$' + document.getElementById("inputTemp").value);
 			console.log("Enviou temperatura " + document.getElementById("inputTemp").value)
 		});
+
+		var buttonAgendar = document.getElementById("buttonAgenda");
+		buttonAgendar.addEventListener("click", function(event) {
+			connection.send('#4$' + document.getEmementById("agendaAtiva").value + 
+				'$' + document.getElementById("inputHoraInicio").value +
+				'$' + document.getElementById("inputHoraFim").value);
+			console.log("Enviou agenda inicio " + document.getElementById("inputHoraInicio").value +
+				' hora fim: ' + document.getElementById("inputHoraFim").value)
+		});
+
+		var askTemp = function() {
+			connection.send('#5');
+			console.log("Perguntou temperatura");
+		}
+		askTemp;
+		var callForAskTemp = self.setInterval(askTemp, 30000);
 
 	});
 </script>

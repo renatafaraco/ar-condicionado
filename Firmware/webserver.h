@@ -14,6 +14,9 @@ void serverSetup() {
   Serial.print("Server em http://");
   Serial.print(WiFi.localIP());
   Serial.println("/");
+  Serial.print("Server em http://");
+  Serial.print(WiFi.hostname());
+  Serial.println("/");
 }
 
 void handlerIndex() {

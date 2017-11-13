@@ -2,39 +2,29 @@
 #include <MideaIR.h>
 
 #define IR_EMITER 3
-#define LED 4
-#define FIVE_SECONDS    5000
 
+bool controleArLigado = 0;
 
 // Objeto IRSend e objeto do controle remoto
 IRsend irsend(IR_EMITER);
 MideaIR remote_control(&irsend);
 
-
-void piscaled() {
-  for(int i = 0; i < 5; i++) {
-    digitalWrite(LED,HIGH);
-    delay(500);
-    digitalWrite(LED, LOW);
-    delay(500);
-  }
-}
-
 void controleSetup() {
   // Definindo pinos como output
   pinMode(IR_EMITER, OUTPUT);
-  pinMode(LED, OUTPUT);
 }
 
 void controleLigar() {
   Serial.println(F("Ligando refrigerador."));
   remote_control.turnON();
+  controleArLigado = true;
   piscaled();
 }
 
 void controleDesligar() {
   Serial.println(F("Desligando refrigerador."));
   remote_control.turnOFF();
+  controleArLigado = false;
   piscaled();
 }
 
@@ -45,5 +35,9 @@ void controleMudarTemp(int temp) {
   remote_control.setTemperature(temp);
   remote_control.emit();
   piscaled();
+}
+
+bool arLigado() {
+  return controleArLigado;
 }
 
