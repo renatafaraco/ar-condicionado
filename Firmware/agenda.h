@@ -1,5 +1,5 @@
 #include <EEPROM.h>
-
+#define MEM_ALOC_SIZE 10
 
 #define EEPROM_AGENDA 0 // endereço eeprom para agenda ativa
 #define EEPROM_HORA_INICIO 1 // endereço eeprom para hora inicio
@@ -12,7 +12,7 @@
 #define ME_RESPOSTA 2 // resposta do sevidor NTP
 
 int maquinaAgenda = ME_AGUARDANDO;
-unsigned long intervaloAgenda = 5*60*1000;
+unsigned long intervaloAgenda = 2*60*1000;
 unsigned long controleAgenda = 0;
 
 void setAgendaAtiva(bool ativo);
@@ -37,6 +37,7 @@ void agendaSetup() {
 
 void agendaLoop() {
   if(getAgendaAtiva()) {
+     int cb;
      switch(maquinaAgenda) {
       case ME_AGUARDANDO:
         if (millis() - controleAgenda >= intervaloAgenda) {
@@ -47,13 +48,23 @@ void agendaLoop() {
       case ME_REQUISICAO:
         sendNTPpacket(timeServerIP);
         maquinaAgenda = ME_RESPOSTA;
+        delay(1000);
+        cb = udp.parsePacket();
+        if (!cb) {
+          Serial.println("Sem pacote ainda");
+        }
+        Serial.println("Resposta requisicao NTP");
+        testeAgenda();
+        controleAgenda = millis();
+        maquinaAgenda = ME_AGUARDANDO;
         break;
         
       case ME_RESPOSTA:
-        int cb = udp.parsePacket();
+        cb = udp.parsePacket();
         if (!cb) {
           break;
         }
+        Serial.println("Resposta requisicao NTP");
         testeAgenda();
         controleAgenda = millis();
         maquinaAgenda = ME_AGUARDANDO;
@@ -75,10 +86,18 @@ void testeAgenda() {
   int hr=(epoch  % 86400L) / 3600;
   int min=(epoch % 3600) / 60;
   int sec=(epoch % 60);
+  Serial.print("Hora agora: ");
+  Serial.println(hr);
+  Serial.print("Min agora: ");
+  Serial.println(min);
+  Serial.print("Sec agora: ");
+  Serial.println(sec);
 
   if (arLigado() && hr > getHoraFim() && min > getMinFim()) {
+    Serial.println("Desligando ar");
     controleDesligar(); 
   } else if (!arLigado() && hr > getHoraInicio() && min > getMinInicio()) {
+    Serial.println("Ligando ar");
     controleLigar(); 
   }
   yield();
@@ -108,57 +127,85 @@ String getAgendaConfig() {
 
 void setAgendaAtiva(bool ativo) {
   EEPROM.write(EEPROM_AGENDA, ativo);
+  Serial.print("gravou ativo: ");
+  Serial.println(ativo);
 }
 
 bool getAgendaAtiva() {
+  EEPROM.begin(MEM_ALOC_SIZE);
   bool ativo = EEPROM.read(EEPROM_AGENDA);
+  EEPROM.end();
   return ativo;
 }
 
 
 void setHoraInicio(int horaInicio) {
-  if (horaInicio < 24 || horaInicio >=0) {
-    EEPROM.write(EEPROM_HORA_INICIO, horaInicio);
-  }
+  EEPROM.begin(MEM_ALOC_SIZE);
+  EEPROM.write(EEPROM_HORA_INICIO, horaInicio);
+  Serial.print("gravou hora inicio: ");
+  Serial.println(horaInicio);
+  EEPROM.end();
 }
 
 int getHoraInicio() {
+  EEPROM.begin(MEM_ALOC_SIZE);
   int horaInicio = EEPROM.read(EEPROM_HORA_INICIO);
+  Serial.print("retornou hora inicio: ");
+  Serial.println(horaInicio);
+  EEPROM.end();
   return horaInicio;
 }
 
 
 void setMinInicio(int minInicio) {
-  if (minInicio < 60 || minInicio >=0) {
-    EEPROM.write(EEPROM_MIN_INICIO, minInicio);
-  }
+  EEPROM.begin(MEM_ALOC_SIZE);
+  EEPROM.write(EEPROM_MIN_INICIO, minInicio);
+  Serial.print("gravou minuto inicio: ");
+  Serial.println(minInicio);
+  EEPROM.end();
 }
 
 int getMinInicio() {
+  EEPROM.begin(MEM_ALOC_SIZE);
   int minInicio = EEPROM.read(EEPROM_MIN_INICIO);
+  Serial.print("retornou minuto inicio: ");
+  Serial.println(minInicio);
+  EEPROM.end();
   return minInicio;
 }
 
 
 void setHoraFim(int horaFim) {
-  if (horaFim < 24 || horaFim >=0) {
-    EEPROM.write(EEPROM_HORA_FIM, horaFim);
-  }
+  EEPROM.begin(MEM_ALOC_SIZE);
+  EEPROM.write(EEPROM_HORA_FIM, horaFim);
+  Serial.print("gravou hora fim: ");
+  Serial.println(horaFim);
+  EEPROM.end();
 }
 
 int getHoraFim() {
+  EEPROM.begin(MEM_ALOC_SIZE);
   int horaFim = EEPROM.read(EEPROM_HORA_FIM);
+  Serial.print("retornou hora fim: ");
+  Serial.println(horaFim);
+  EEPROM.end();
   return horaFim;
 }
 
 
 void setMinFim(int minFim) {
-  if (minFim < 60 || minFim >=0) {
-    EEPROM.write(EEPROM_MIN_FIM, minFim);
-  }
+  EEPROM.begin(MEM_ALOC_SIZE);
+  EEPROM.write(EEPROM_MIN_FIM, minFim);
+  Serial.print("gravou minuto fim: ");
+  Serial.println(minFim);
+  EEPROM.end();
 }
 
 int getMinFim() {
+  EEPROM.begin(MEM_ALOC_SIZE);
   int minFim = EEPROM.read(EEPROM_MIN_FIM);
+  Serial.print("retornou minuto fim: ");
+  Serial.println(minFim);
+  EEPROM.end();
   return minFim;
 }

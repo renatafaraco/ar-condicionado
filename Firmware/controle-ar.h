@@ -1,7 +1,7 @@
 #include <IRremoteESP8266.h>
 #include <MideaIR.h>
 
-#define IR_EMITER 3
+#define IR_EMITER 3 // pino RX do nodemcu
 
 bool controleArLigado = 0;
 

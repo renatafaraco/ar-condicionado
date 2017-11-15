@@ -22,6 +22,9 @@
 	<div class="row justify-content-center">
   		Temperatura atual: <span id="temperatura">--</span> °C
   	</div>
+  	<div class="row justify-content-center">
+  		Umidade atual: <span id="umidade">--</span> %
+  	</div>
 </div>
 <div clas="container" style="margin-top: 30px">
   	<div class="row justify-content-center">
@@ -95,7 +98,11 @@
     			.replace(new RegExp('(?:^|\\s)'+ 'alert-danger' + '(?:\\s|$)'), ' ');
     		document.getElementById('alerta').innerHTML = '';
 		}
-
+		var auxFunc = function(aux) {
+			if (aux < 10)
+				return '0'+aux;
+			return aux;
+		}
 		var comandoSucesso = function() {
 			document.getElementById('alerta').innerHTML = 'Comando enviado com sucesso!';
 			document.getElementById('div-alerta').className += 'alert-success';
@@ -138,6 +145,23 @@
 				console.log('Temperatura = ' + res[1]);
 				document.getElementById('temperatura').innerHTML = res[1];
 			}
+			else if (evt.data.startsWith('#Umid')) {
+				var res = evt.data.split('$');
+				var temp = res[1];
+				console.log('Umidade = ' + res[1]);
+				document.getElementById('umidade').innerHTML = res[1];
+			}
+			else if (evt.data.startsWith('#Agenda')) {
+				var res = evt.data.split('$');
+				var ativa = res[1].split('&');
+				var horaInicio = ativa[1].split(':');
+				var horaFim = ativa[2].split(':');
+				document.getElementById('inputHoraInicio').value = (auxFunc(horaInicio[0]) + ':' + auxFunc(horaInicio[1]));
+				document.getElementById('inputHoraFim').value = (auxFunc(horaFim[0]) + ':' + auxFunc(horaFim[1]));
+				if (ativa[0] == '1') {
+					document.getElementById('agendaAtiva').checked = true;
+				}	
+			}
 
 		}
 
@@ -162,7 +186,11 @@
 
 		var buttonAgendar = document.getElementById("buttonAgenda");
 		buttonAgendar.addEventListener("click", function(event) {
-			connection.send('#4$' + document.getEmementById("agendaAtiva").value + 
+			var agendaChecked = '0';
+			if(document.getElementById("agendaAtiva").checked) {
+				agendaChecked = '1';
+			}
+			connection.send('#4$' + agendaChecked + 
 				'$' + document.getElementById("inputHoraInicio").value +
 				'$' + document.getElementById("inputHoraFim").value);
 			console.log("Enviou agenda inicio " + document.getElementById("inputHoraInicio").value +
@@ -174,8 +202,13 @@
 			console.log("Perguntou temperatura");
 		}
 		askTemp;
+		var askUmid = function() {
+			connection.send('#6');
+			console.log("Perguntou umidade");
+		}
+		askUmid;
 		var callForAskTemp = self.setInterval(askTemp, 30000);
-
+		var callForAskUmid = self.setInterval(askUmid, 30000);
 	});
 </script>
 </body>

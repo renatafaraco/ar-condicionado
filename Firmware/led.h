@@ -1,4 +1,4 @@
-#define LED 4
+#define LED 0 // pino D3 do nodemcu
 #define FIVE_SECONDS    5000
 
 int ledControl = -1;

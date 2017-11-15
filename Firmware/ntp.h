@@ -3,7 +3,7 @@
 
 unsigned int udpPort = 2390;      // local port to listen for UDP packets
 IPAddress timeServerIP;
-const char* ntpServerName = "pool.ntp.br";
+const char* ntpServerName = "3.br.pool.ntp.org";
 
 const int NTP_PACKET_SIZE = 48;
 

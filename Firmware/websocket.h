@@ -4,7 +4,10 @@ WebSocketsServer webSocket(81);
 uint8_t socketNumber = 0;
 bool websocketConnected = false;
 
+void processAgenda(uint8_t * payload);
+void processTemp(uint8_t * payload);
 void websocketHandler(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght);
+
 
 void websocketSetup() {
   webSocket.begin();
@@ -42,6 +45,10 @@ void websocketHandler(uint8_t num, WStype_t type, uint8_t * payload, size_t leng
           msgToSend = "#Agenda$";
           msgToSend += getAgendaConfig();
           Serial.println(msgToSend);
+          webSocket.sendTXT(socketNumber,msgToSend);
+          float h = getUmidade();
+          msgToSend = "#Umid$" + String(h,2);
+          Serial.println(msgToSend);
           webSocket.sendTXT(socketNumber,msgToSend);          
         }
         else if (msg == '1') {
@@ -58,18 +65,26 @@ void websocketHandler(uint8_t num, WStype_t type, uint8_t * payload, size_t leng
         }
         else if (msg == '3') {
           Serial.println("#Setar");
-          controleMudarTemp(22);
           webSocket.sendTXT(socketNumber, "#ok");
+          processTemp(payload);
           yield();
         }
         else if (msg == '4') {
           Serial.println("#Agenda");
           webSocket.sendTXT(socketNumber, "#ok");
+          processAgenda(payload);
           yield();
         }
         else if (msg == '5') {
           float t = getTemperatura();
           String msgToSend = "#Temp$" + String(t,2);
+          Serial.println(msgToSend);
+          webSocket.sendTXT(socketNumber,msgToSend);
+          yield();
+        }
+        else if (msg == '6') {
+          float h = getUmidade();
+          String msgToSend = "#Umid$" + String(h,2);
           Serial.println(msgToSend);
           webSocket.sendTXT(socketNumber,msgToSend);
           yield();
@@ -86,6 +101,36 @@ void websocketHandler(uint8_t num, WStype_t type, uint8_t * payload, size_t leng
       Serial.printf("[%u] Erro %s\n", num, payload);
       yield();
   }
+}
+
+void processAgenda(uint8_t * payload) {  // muito feito, refazer o split melhor depois
+  String sMensagem((char*) payload);
+  int primeiroS = sMensagem.indexOf('$');
+  String isAgendaAtiva = sMensagem.substring(primeiroS+1, primeiroS+2);
+  Serial.println ("Status agenda: " + isAgendaAtiva);
+  int segundoS = sMensagem.indexOf('$',primeiroS+1);
+  int terceiroS = sMensagem.indexOf(':',segundoS+1);
+  String horaInicio = sMensagem.substring(segundoS+1, terceiroS);
+  Serial.println("Hora inicio: " + horaInicio);
+  int quartoS = sMensagem.indexOf('$',terceiroS+1);
+  String minutoInicio = sMensagem.substring(terceiroS+1, quartoS);
+  Serial.println("Minuto inicio: " + minutoInicio);
+  int quintoS = sMensagem.indexOf(':', quartoS+1);
+  String horaFim = sMensagem.substring(quartoS+1, quintoS);
+  Serial.println("Hora fim: " + horaFim);
+  String minutoFim = sMensagem.substring(quintoS+1, sMensagem.length());
+  Serial.println("Minuto fim: " + minutoFim);
+  yield();
+  saveAgendaConfig(isAgendaAtiva.toInt(),horaInicio.toInt(), minutoInicio.toInt(),horaFim.toInt(), minutoFim.toInt());
+  
+}
+
+void processTemp(uint8_t * payload) {
+  String sMensagem((char*) payload);
+  int primeiroS = sMensagem.indexOf('$');
+  String temp = sMensagem.substring(primeiroS+1, sMensagem.length());  
+  Serial.println("Temp = " + temp);
+  controleMudarTemp(temp.toInt());
 }
 
 void websocketLoop() {
