@@ -20,7 +20,6 @@ void setup(){
   scanFiles();
   websocketSetup();
   sensorSetup();
-  agendaSetup(); 
   
 }
 
