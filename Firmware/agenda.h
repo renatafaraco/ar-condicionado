@@ -9,7 +9,7 @@
 
 #define ME_AGUARDANDO 0 // máquina de estado aguardando
 #define ME_REQUISICAO 1 // requisição ao sevidor NTP
-#define ME_RESPOSTA 2 // resposta do sevidor NTP
+
 
 int maquinaAgenda = ME_AGUARDANDO;
 unsigned long intervaloAgenda = 2*60*1000;
@@ -46,25 +46,6 @@ void agendaLoop() {
         break;
   
       case ME_REQUISICAO:
-        sendNTPpacket(timeServerIP);
-        maquinaAgenda = ME_RESPOSTA;
-        delay(1000);
-        cb = udp.parsePacket();
-        if (!cb) {
-          Serial.println("Sem pacote ainda");
-        }
-        Serial.println("Resposta requisicao NTP");
-        testeAgenda();
-        controleAgenda = millis();
-        maquinaAgenda = ME_AGUARDANDO;
-        break;
-        
-      case ME_RESPOSTA:
-        cb = udp.parsePacket();
-        if (!cb) {
-          break;
-        }
-        Serial.println("Resposta requisicao NTP");
         testeAgenda();
         controleAgenda = millis();
         maquinaAgenda = ME_AGUARDANDO;
@@ -75,31 +56,32 @@ void agendaLoop() {
 
 void testeAgenda() {
   Serial.println("Fazendo o teste da hora");
-  udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-  unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-  unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-  unsigned long secsSince1900 = highWord << 16 | lowWord;
-  const unsigned long seventyYears = 2208988800UL;
-  unsigned long epoch = secsSince1900 - seventyYears;
-  Serial.print(F("UNIX"));
-  Serial.println(epoch);
-  int hr=(epoch  % 86400L) / 3600;
-  int min=(epoch % 3600) / 60;
-  int sec=(epoch % 60);
-  Serial.print("Hora agora: ");
-  Serial.println(hr);
-  Serial.print("Min agora: ");
-  Serial.println(min);
-  Serial.print("Sec agora: ");
-  Serial.println(sec);
-
-  if (arLigado() && hr > getHoraFim() && min > getMinFim()) {
-    Serial.println("Desligando ar");
-    controleDesligar(); 
-  } else if (!arLigado() && hr > getHoraInicio() && min > getMinInicio()) {
-    Serial.println("Ligando ar");
-    controleLigar(); 
-  }
+  checkNTP();
+//  udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+//  unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+//  unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+//  unsigned long secsSince1900 = highWord << 16 | lowWord;
+//  const unsigned long seventyYears = 2208988800UL;
+//  unsigned long epoch = secsSince1900 - seventyYears;
+//  Serial.print(F("UNIX"));
+//  Serial.println(epoch);
+//  int hr=(epoch  % 86400L) / 3600;
+//  int min=(epoch % 3600) / 60;
+//  int sec=(epoch % 60);
+//  Serial.print("Hora agora: ");
+//  Serial.println(hr);
+//  Serial.print("Min agora: ");
+//  Serial.println(min);
+//  Serial.print("Sec agora: ");
+//  Serial.println(sec);
+//
+//  if (arLigado() && hr > getHoraFim() && min > getMinFim()) {
+//    Serial.println("Desligando ar");
+//    controleDesligar(); 
+//  } else if (!arLigado() && hr > getHoraInicio() && min > getMinInicio()) {
+//    Serial.println("Ligando ar");
+//    controleLigar(); 
+//  }
   yield();
 }
 
