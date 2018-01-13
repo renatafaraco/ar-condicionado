@@ -7,6 +7,7 @@
 #include "file.h"
 #include "agenda.h"
 #include "websocket.h"
+#include "lcd.h"
 
 
 void setup(){
@@ -20,6 +21,7 @@ void setup(){
   scanFiles();
   websocketSetup();
   sensorSetup();
+  lcdSetup();
   
 }
 

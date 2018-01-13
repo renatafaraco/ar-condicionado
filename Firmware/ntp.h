@@ -3,7 +3,7 @@
 
 WiFiUDP ntpUDP;
 int16_t utc = -3; //UTC -3:00 Brazil
-NTPClient timeClient(ntpUDP, "a.st1.ntp.br", utc*3600, 60000);
+NTPClient timeClient(ntpUDP, "a.st1.ntp.br", 0*3600, 60000);
 
 
 void ntpSetup() {
